@@ -1,0 +1,52 @@
+{
+    "variables": {
+        "image_name": "docker-powershell-linter",
+        "image_tag": "0.1",
+        "docker_login_repo": "nsandeepprotech",
+        "docker_login_username": "nsandeepprotech",
+        "docker_login_password":  ""
+    },
+    "sensitive-variables": [
+        "docker_hub_password"
+    ],
+    "builders": [
+        {
+            "type": "docker",
+            "image": "mcr.microsoft.com/powershell:alpine-3.12",
+            "commit": "true",
+            "pull": "true",
+            "changes": [
+                "ENTRYPOINT [ \"pwsh\", \"-c\" ]"
+            ]
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "shell",
+            "script": "./shell_scripts/install_ansible.sh"
+        },
+        {
+            "type": "ansible-local",
+            "playbook_file": "./ansible_scripts/install_psslinter.yml"
+        }
+    ],
+    "post-processors": [
+        [
+            {
+                "type": "docker-tag",
+                "repository": "{{user `docker_login_repo`}}/{{user `image_name`}}",
+                "tag": "{{user `image_tag`}}"
+            },
+            {
+                "type": "docker-push",
+                "login": "true",
+                "login_username": "{{user `docker_login_username`}}",
+                "login_password": "{{user `docker_login_password`}}"
+            }
+        ]
+    ]
+}
+
+
+
+
